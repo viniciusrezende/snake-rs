@@ -28,7 +28,7 @@ impl Game {
         rect.set_fill_color(Color::RED);
         rw.draw(&rect);
         
-        for part in &self.snake.body  {
+        for part in self.snake.get_body()  {
             let mut rect = RectangleShape::new();
             rect.set_position((part.get_x()*SCALE,part.get_y()*SCALE));
             rect.set_size((SCALE,SCALE));
@@ -42,7 +42,7 @@ impl Game {
     
     pub fn tick(&mut self) {
         self.snake.try_to_eat(&self.food);
-        if self.snake.grow {
+        if self.snake.get_grow() {
             self.food.regenerate();
         }
         self.snake.move_forward();

@@ -15,11 +15,11 @@ impl SnakeBody {
     }
 }
 pub struct Snake {
-    pub body: Vec<SnakeBody>,
+    body: Vec<SnakeBody>,
     direction: Direction,
     color: Color,
-    pub speed: f32,
-    pub grow: bool,
+    speed: f32,
+    grow: bool,
 }
 impl Snake {
     pub fn new(starting_x:f32 , starting_y:f32) -> Snake {
@@ -70,6 +70,12 @@ impl Snake {
     }
     pub fn get_direction(&self) -> Direction {
         self.direction
+    }
+    pub fn get_grow(&self) -> bool {
+        self.grow
+    }
+    pub fn get_body(&self) -> &Vec<SnakeBody> {
+        &self.body
     }
 
 }
