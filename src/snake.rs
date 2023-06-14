@@ -2,6 +2,8 @@ use crate::direction::Direction;
 use crate::food::Food;
 use sfml::graphics::Color;
 
+use crate::WIDTH;
+use crate::HEIGHT;
 pub struct SnakeBody {
     x: f32,
     y: f32,
@@ -50,9 +52,20 @@ impl Snake {
             self.body.pop();
         }
         self.grow = false;
-        println!("{} {} {} {}", self.speed, self.body.len(), head.x, head.y);
         self.body.insert(0, head);
         // check body colision and wall colision
+    }
+    pub fn check_colision(&self) -> bool {
+        let head:SnakeBody = SnakeBody { x: self.body.first().unwrap().x, y: self.body.first().unwrap().y };
+        if head.x < 0. || head.x >= WIDTH as f32 || head.y < 0. || head.y >= HEIGHT as f32 {
+            return true;
+        }
+        for part in self.body.iter().skip(1) {
+            if head.x == part.x && head.y == part.y {
+                return true;
+            }
+        }
+        return false;
     }
     pub fn try_to_eat(&mut self, food:&Food) {
         let head:SnakeBody = SnakeBody { x: self.body.first().unwrap().x, y: self.body.first().unwrap().y };
