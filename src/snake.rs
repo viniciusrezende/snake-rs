@@ -16,7 +16,8 @@ impl SnakeBody {
 }
 pub struct Snake {
     body: Vec<SnakeBody>,
-    direction: Direction,
+    next_direction: Direction,
+    current_direction: Direction,
     color: Color,
     speed: f32,
     grow: bool,
@@ -25,7 +26,8 @@ impl Snake {
     pub fn new(starting_x:f32 , starting_y:f32) -> Snake {
         let mut snk = Snake {
             body: vec![SnakeBody { x: starting_x, y: starting_y }],
-            direction: Direction::Right,
+            current_direction: Direction::Right,
+            next_direction: Direction::Right,
             color: Color::GREEN,
             speed: 1.,
             grow: false,
@@ -37,7 +39,8 @@ impl Snake {
 
     pub fn move_forward(&mut self) {
         let mut head:SnakeBody = SnakeBody { x: self.body.first().unwrap().x, y: self.body.first().unwrap().y };
-        match self.direction{
+        self.current_direction = self.next_direction;
+        match self.current_direction{
             Direction::Up=>head.y-=1.,
             Direction::Down=>head.y+=1.,
             Direction::Right=>head.x+=1.,
@@ -66,10 +69,10 @@ impl Snake {
     }
 
     pub fn set_direction(&mut self, direction:Direction) {
-        self.direction = direction;
+        self.next_direction = direction;
     }
     pub fn get_direction(&self) -> Direction {
-        self.direction
+        self.current_direction
     }
     pub fn get_grow(&self) -> bool {
         self.grow
