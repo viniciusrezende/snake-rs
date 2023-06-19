@@ -5,18 +5,21 @@ use crate::SCALE;
 use crate::WIDTH;
 use crate::HEIGHT;
 
-use sfml::graphics::{RenderWindow,RectangleShape,Shape, Transformable, Color, RenderTarget};
+use sfml::graphics::{RenderWindow,RectangleShape,Shape, Transformable, Color, RenderTarget, Text, Font, Drawable};
 use sfml::window::Key;
 
 #[derive(Eq, PartialEq, Copy, Clone, Debug, Hash)]
 pub enum GameState {
     Running,
-    GameOver
+    GameOver,
+    MainMenu,
+    HighScore,
 }
 pub struct Game {
     snake: Snake,
     food: Food,
-    state: GameState
+    state: GameState,
+    score: u8
 }
 
 impl Game {
@@ -24,7 +27,8 @@ impl Game {
         let mut game = Game {
             snake: Snake::new(20.,20.),
             food: Food::new(-1.,-1.),
-            state: GameState::Running
+            state: GameState::MainMenu,
+            score: 0
         };
         
         game.food.regenerate();
@@ -75,6 +79,7 @@ impl Game {
     pub fn tick(&mut self) {
         self.snake.try_to_eat(&self.food);
         if self.snake.get_grow() {
+            self.inc_score();
             self.food.regenerate();
         }
         self.snake.move_forward();
@@ -109,6 +114,9 @@ impl Game {
                     self.snake.set_direction(Direction::Right);
                 }
             },
+            Key::Space=> {
+                self.food.regenerate();
+            }
             _=>(),
         }
     }
@@ -118,5 +126,74 @@ impl Game {
     }
     pub fn get_game_state(&self) -> GameState {
         self.state
+    }
+    pub fn get_score(&self) -> u8 {
+        self.score
+    }
+    pub fn inc_score(&mut self) {
+        self.score+=1;
+    }
+    pub fn render_game_over(&mut self, rw: &mut RenderWindow, font: &Font) {
+        let messages = [
+            String::from("Game Over"),
+            format!( "Score {}", self.get_score() ),
+            String::from("Press Space to restart")
+        ];
+        for (i, message) in messages.iter().enumerate() {
+            let mut text = Text::new(message, font, 50);
+            text.set_position(
+                (
+                    WIDTH*SCALE/2.-text.local_bounds().width/2.,
+                    HEIGHT*SCALE/2. + ( (i as f32)*50. ) - ( messages.len() as f32 * 50. )
+                )
+            );
+            rw.draw(&text);
+        }
+        rw.display();
+
+    }
+
+    pub fn render_main_menu(&mut self, rw: &mut RenderWindow, font: &Font) {
+        let messages = [
+            String::from("Start"),
+            String::from("High Scores"),
+            String::from("Quit")
+        ];
+        for (i, message) in messages.iter().enumerate() {
+            let mut text = Text::new(message, font, 50);
+            text.set_position(
+                (
+                    WIDTH*SCALE/2.-text.local_bounds().width/2.,
+                    HEIGHT*SCALE/2. + ( (i as f32)*50. ) - ( messages.len() as f32 * 50. )
+                )
+            );
+            rw.draw(&text);
+        }
+        rw.display();
+
+    }
+
+    pub fn render_high_score(&mut self, rw: &mut RenderWindow, font: &Font) {
+        let messages = [
+            String::from("High Scores"),
+            String::from("x                   500"),
+            String::from("x                   500"),
+            String::from("x                   500"),
+            String::from("x                   500"),
+            String::from("x                   500"),
+            String::from("Space to return to main menu")
+        ];
+        for (i, message) in messages.iter().enumerate() {
+            let mut text = Text::new(message, font, 50);
+            text.set_position(
+                (
+                    WIDTH*SCALE/2.-text.local_bounds().width/2.,
+                    HEIGHT*SCALE/2. + ( (i as f32)*50. ) - ( messages.len() as f32 * 50. )
+                )
+            );
+            rw.draw(&text);
+        }
+        rw.display();
+
     }
 }

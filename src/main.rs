@@ -5,18 +5,19 @@ mod game;
 
 use sfml::{
     graphics::{
-        Color, RenderTarget, RenderWindow
+        Color, RenderTarget, RenderWindow, Font
     },
     window::{ContextSettings, Event, Style},
     system::{Clock, Time},
 };
 
-pub const SCALE: f32 = 20.;
-pub const WIDTH: f32 = 40.;
-pub const HEIGHT: f32 = 30.;
+pub const SCALE: f32 = 16.;
+pub const WIDTH: f32 = 50.;
+pub const HEIGHT: f32 = 38.;
 
 
 fn main() {
+    let font = Font::from_file("src/assets/Minimal3x5.ttf").unwrap();
     let mut clock = Clock::start();
     let mut time:Time;
     let mut rw = RenderWindow::new(
@@ -58,12 +59,41 @@ fn main() {
                         Event::KeyReleased { code, .. } => {
                             if code == sfml::window::Key::Space {
                                 game = game::Game::new();
+                                game.set_game_state(game::GameState::Running);
                             }
                         },
                         _ => {}
                     }
                 }
-                rw.display();
+                game.render_game_over(&mut rw, &font);
+            }
+            game::GameState::MainMenu => {
+                while let Some(ev) = rw.poll_event() {
+                    match ev {
+                        Event::Closed => rw.close(),
+                        Event::KeyReleased { code, .. } => {
+                            if code == sfml::window::Key::Space {
+                                game.set_game_state(game::GameState::Running);
+                            }
+                        },
+                        _ => {}
+                    }
+                }
+                game.render_main_menu(&mut rw, &font);
+            }
+            game::GameState::HighScore => {
+                while let Some(ev) = rw.poll_event() {
+                    match ev {
+                        Event::Closed => rw.close(),
+                        Event::KeyReleased { code, .. } => {
+                            if code == sfml::window::Key::Space {
+                                game.set_game_state(game::GameState::MainMenu);
+                            }
+                        },
+                        _ => {}
+                    }
+                }
+                game.render_high_score(&mut rw, &font);
             }
         }
     }

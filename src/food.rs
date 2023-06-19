@@ -16,8 +16,8 @@ impl Food {
         let mut rng = rand::thread_rng();
         let posx:f32 = rng.gen();
         let posy:f32 = rng.gen();
-        self.x = (1. + ( ( WIDTH-1. ) * posx ) ).floor();
-        self.y = (1. + ( ( HEIGHT-1. ) * posy ) ).floor();
+        self.x = (1. + ( ( WIDTH-2. ) * posx ) ).floor();
+        self.y = (1. + ( ( HEIGHT-2. ) * posy ) ).floor();
     }
     pub fn get_x(&self) -> f32 {
         self.x

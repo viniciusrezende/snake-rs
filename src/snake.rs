@@ -31,7 +31,7 @@ impl Snake {
             current_direction: Direction::Right,
             next_direction: Direction::Right,
             color: Color::GREEN,
-            speed: 1.,
+            speed: 0.5,
             grow: false,
         };
         snk.body.push(SnakeBody { x: starting_x-1., y: starting_y });
@@ -71,7 +71,9 @@ impl Snake {
         let head:SnakeBody = SnakeBody { x: self.body.first().unwrap().x, y: self.body.first().unwrap().y };
         if food.get_x() == head.x && food.get_y() == head.y {
             self.grow=true;
-            self.speed*=0.8;
+            if self.speed > 0.1 {
+                self.speed-=0.05;
+            }
         }
     }
     pub fn get_color(&self) -> Color {
