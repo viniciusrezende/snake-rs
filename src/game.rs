@@ -5,7 +5,7 @@ use crate::SCALE;
 use crate::WIDTH;
 use crate::HEIGHT;
 
-use sfml::graphics::{RenderWindow,RectangleShape,Shape, Transformable, Color, RenderTarget, Text, Font, Drawable};
+use sfml::graphics::{RenderWindow,RectangleShape,Shape, Transformable, Color, RenderTarget};
 use sfml::window::Key;
 
 #[derive(Eq, PartialEq, Copy, Clone, Debug, Hash)]
@@ -14,6 +14,7 @@ pub enum GameState {
     GameOver,
     MainMenu,
     HighScore,
+    Quit,
 }
 pub struct Game {
     snake: Snake,
@@ -34,7 +35,12 @@ impl Game {
         game.food.regenerate();
         return game;
     }
-
+    pub fn reset(&mut self) {
+        self.snake = Snake::new(20.,20.);
+        self.food = Food::new(-1.,-1.);
+        self.score = 0;
+        self.food.regenerate();
+    }
     fn render_wall(&mut self, rw: &mut RenderWindow) {
         let mut rect = RectangleShape::new();
         rect.set_position((0.,0.));
@@ -92,30 +98,30 @@ impl Game {
         self.snake.get_speed()
     }
 
-    pub fn set_snake_direction_based_on_keypress(&mut self, code: Key ) {
+    pub fn handler( code: Key, game: &mut crate::game::Game) {
         match code {
             Key::Up=> {
-                if self.snake.get_direction() != Direction::Down {
-                    self.snake.set_direction(Direction::Up);
+                if game.snake.get_direction() != Direction::Down {
+                    game.snake.set_direction(Direction::Up);
                 }
             },
             Key::Down=> {
-                if self.snake.get_direction() != Direction::Up {
-                    self.snake.set_direction(Direction::Down);
+                if game.snake.get_direction() != Direction::Up {
+                    game.snake.set_direction(Direction::Down);
                 }
             },
             Key::Left=> {
-                if self.snake.get_direction() != Direction::Right {
-                    self.snake.set_direction(Direction::Left);
+                if game.snake.get_direction() != Direction::Right {
+                    game.snake.set_direction(Direction::Left);
                 }
             },
             Key::Right=> {
-                if self.snake.get_direction() != Direction::Left {
-                    self.snake.set_direction(Direction::Right);
+                if game.snake.get_direction() != Direction::Left {
+                    game.snake.set_direction(Direction::Right);
                 }
             },
             Key::Space=> {
-                self.food.regenerate();
+                game.food.regenerate();
             }
             _=>(),
         }
@@ -132,68 +138,5 @@ impl Game {
     }
     pub fn inc_score(&mut self) {
         self.score+=1;
-    }
-    pub fn render_game_over(&mut self, rw: &mut RenderWindow, font: &Font) {
-        let messages = [
-            String::from("Game Over"),
-            format!( "Score {}", self.get_score() ),
-            String::from("Press Space to restart")
-        ];
-        for (i, message) in messages.iter().enumerate() {
-            let mut text = Text::new(message, font, 50);
-            text.set_position(
-                (
-                    WIDTH*SCALE/2.-text.local_bounds().width/2.,
-                    HEIGHT*SCALE/2. + ( (i as f32)*50. ) - ( messages.len() as f32 * 50. )
-                )
-            );
-            rw.draw(&text);
-        }
-        rw.display();
-
-    }
-
-    pub fn render_main_menu(&mut self, rw: &mut RenderWindow, font: &Font) {
-        let messages = [
-            String::from("Start"),
-            String::from("High Scores"),
-            String::from("Quit")
-        ];
-        for (i, message) in messages.iter().enumerate() {
-            let mut text = Text::new(message, font, 50);
-            text.set_position(
-                (
-                    WIDTH*SCALE/2.-text.local_bounds().width/2.,
-                    HEIGHT*SCALE/2. + ( (i as f32)*50. ) - ( messages.len() as f32 * 50. )
-                )
-            );
-            rw.draw(&text);
-        }
-        rw.display();
-
-    }
-
-    pub fn render_high_score(&mut self, rw: &mut RenderWindow, font: &Font) {
-        let messages = [
-            String::from("High Scores"),
-            String::from("x                   500"),
-            String::from("x                   500"),
-            String::from("x                   500"),
-            String::from("x                   500"),
-            String::from("x                   500"),
-            String::from("Space to return to main menu")
-        ];
-        for (i, message) in messages.iter().enumerate() {
-            let mut text = Text::new(message, font, 50);
-            text.set_position(
-                (
-                    WIDTH*SCALE/2.-text.local_bounds().width/2.,
-                    HEIGHT*SCALE/2. + ( (i as f32)*50. ) - ( messages.len() as f32 * 50. )
-                )
-            );
-            rw.draw(&text);
-        }
-        rw.display();
-
     }
 }

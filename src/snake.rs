@@ -57,7 +57,7 @@ impl Snake {
     }
     pub fn check_colision(&self) -> bool {
         let head:SnakeBody = SnakeBody { x: self.body.first().unwrap().x, y: self.body.first().unwrap().y };
-        if head.x < 0. || head.x >= WIDTH as f32 || head.y < 0. || head.y >= HEIGHT as f32 {
+        if head.x <= 0. || head.x >= WIDTH-1 as f32 || head.y <= 0. || head.y >= HEIGHT-1 as f32 {
             return true;
         }
         for part in self.body.iter().skip(1) {

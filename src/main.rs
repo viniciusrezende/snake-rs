@@ -2,19 +2,30 @@ mod snake;
 mod food;
 mod direction;
 mod game;
+mod gameover;
+mod mainmenu;
+mod highscore;
+mod textblock;
 
 use sfml::{
     graphics::{
         Color, RenderTarget, RenderWindow, Font
     },
-    window::{ContextSettings, Event, Style},
+    window::{ContextSettings, Event, Style, Key},
     system::{Clock, Time},
 };
-
+use crate::{
+    game::GameState,
+    highscore::HighScore,
+    mainmenu::MainMenu,
+    gameover::GameOver,
+    game::Game
+};
 pub const SCALE: f32 = 16.;
 pub const WIDTH: f32 = 50.;
 pub const HEIGHT: f32 = 38.;
 
+type Handler = fn(Key,&mut game::Game);
 
 fn main() {
     let font = Font::from_file("src/assets/Minimal3x5.ttf").unwrap();
@@ -22,11 +33,12 @@ fn main() {
     let mut time:Time;
     let mut rw = RenderWindow::new(
         ( ( SCALE*WIDTH ) as u32, ( SCALE*HEIGHT ) as u32),
-        "Snake Game",
+        "Boitata",
         Style::CLOSE,
         &ContextSettings::default(),
     );
-    let mut game = game::Game::new();
+    let mut game = Game::new();
+    let mut handler: Handler = MainMenu::handler;
     rw.set_vertical_sync_enabled(true);
     
     while rw.is_open() {
@@ -34,16 +46,7 @@ fn main() {
 
         match game.get_game_state() {
             game::GameState::Running => {
-                while let Some(ev) = rw.poll_event() {
-                    match ev {
-                        Event::Closed => rw.close(),
-                        Event::KeyReleased { code, .. } => { 
-                            game.set_snake_direction_based_on_keypress(code);
-                        },
-                        _ => {}
-                    }
-                }
-                // render
+                handler = game::Game::handler;
                 game.update_render(&mut rw);
                 time = clock.elapsed_time();
                 if time.as_seconds() >= game.get_speed() {
@@ -52,48 +55,30 @@ fn main() {
                     rw.clear(Color::BLACK);
                 }
             },
-            game::GameState::GameOver => {
-                while let Some(ev) = rw.poll_event() {
-                    match ev {
-                        Event::Closed => rw.close(),
-                        Event::KeyReleased { code, .. } => {
-                            if code == sfml::window::Key::Space {
-                                game = game::Game::new();
-                                game.set_game_state(game::GameState::Running);
-                            }
-                        },
-                        _ => {}
-                    }
-                }
-                game.render_game_over(&mut rw, &font);
+            GameState::GameOver => {
+                handler = GameOver::handler;
+                GameOver::render(&mut rw, &font, &game);
             }
-            game::GameState::MainMenu => {
-                while let Some(ev) = rw.poll_event() {
-                    match ev {
-                        Event::Closed => rw.close(),
-                        Event::KeyReleased { code, .. } => {
-                            if code == sfml::window::Key::Space {
-                                game.set_game_state(game::GameState::Running);
-                            }
-                        },
-                        _ => {}
-                    }
-                }
-                game.render_main_menu(&mut rw, &font);
+            GameState::MainMenu => {
+                handler = MainMenu::handler;
+                MainMenu::render(&mut rw, &font);
             }
-            game::GameState::HighScore => {
-                while let Some(ev) = rw.poll_event() {
-                    match ev {
-                        Event::Closed => rw.close(),
-                        Event::KeyReleased { code, .. } => {
-                            if code == sfml::window::Key::Space {
-                                game.set_game_state(game::GameState::MainMenu);
-                            }
-                        },
-                        _ => {}
-                    }
-                }
-                game.render_high_score(&mut rw, &font);
+            GameState::HighScore => {
+                handler = HighScore::handler;
+                HighScore::render(&mut rw, &font);
+            }
+            GameState::Quit => {
+                rw.close();
+            }
+        }
+
+        while let Some(ev) = rw.poll_event() {
+            match ev {
+                Event::Closed => rw.close(),
+                Event::KeyReleased { code, .. } => {
+                    handler(code, &mut game);
+                },
+                _ => {}
             }
         }
     }
