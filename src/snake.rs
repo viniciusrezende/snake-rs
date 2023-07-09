@@ -2,8 +2,8 @@ use crate::direction::Direction;
 use crate::food::Food;
 use sfml::graphics::Color;
 
-use crate::WIDTH;
 use crate::HEIGHT;
+use crate::WIDTH;
 pub struct SnakeBody {
     x: f32,
     y: f32,
@@ -25,30 +25,42 @@ pub struct Snake {
     grow: bool,
 }
 impl Snake {
-    pub fn new(starting_x:f32 , starting_y:f32) -> Snake {
+    pub fn new(starting_x: f32, starting_y: f32) -> Snake {
         let mut snk = Snake {
-            body: vec![SnakeBody { x: starting_x, y: starting_y }],
+            body: vec![SnakeBody {
+                x: starting_x,
+                y: starting_y,
+            }],
             current_direction: Direction::Right,
             next_direction: Direction::Right,
             color: Color::GREEN,
             speed: 0.5,
             grow: false,
         };
-        snk.body.push(SnakeBody { x: starting_x-1., y: starting_y });
-        snk.body.push(SnakeBody { x: starting_x-2., y: starting_y });
+        snk.body.push(SnakeBody {
+            x: starting_x - 1.,
+            y: starting_y,
+        });
+        snk.body.push(SnakeBody {
+            x: starting_x - 2.,
+            y: starting_y,
+        });
         return snk;
     }
 
     pub fn move_forward(&mut self) {
-        let mut head:SnakeBody = SnakeBody { x: self.body.first().unwrap().x, y: self.body.first().unwrap().y };
+        let mut head: SnakeBody = SnakeBody {
+            x: self.body.first().unwrap().x,
+            y: self.body.first().unwrap().y,
+        };
         self.current_direction = self.next_direction;
-        match self.current_direction{
-            Direction::Up=>head.y-=1.,
-            Direction::Down=>head.y+=1.,
-            Direction::Right=>head.x+=1.,
-            Direction::Left=>head.x-=1.,
+        match self.current_direction {
+            Direction::Up => head.y -= 1.,
+            Direction::Down => head.y += 1.,
+            Direction::Right => head.x += 1.,
+            Direction::Left => head.x -= 1.,
         }
-        if ! self.grow {
+        if !self.grow {
             self.body.pop();
         }
         self.grow = false;
@@ -56,8 +68,12 @@ impl Snake {
         // check body colision and wall colision
     }
     pub fn check_colision(&self) -> bool {
-        let head:SnakeBody = SnakeBody { x: self.body.first().unwrap().x, y: self.body.first().unwrap().y };
-        if head.x <= 0. || head.x >= WIDTH-1 as f32 || head.y <= 0. || head.y >= HEIGHT-1 as f32 {
+        let head: SnakeBody = SnakeBody {
+            x: self.body.first().unwrap().x,
+            y: self.body.first().unwrap().y,
+        };
+        if head.x <= 0. || head.x >= WIDTH - 1 as f32 || head.y <= 0. || head.y >= HEIGHT - 1 as f32
+        {
             return true;
         }
         for part in self.body.iter().skip(1) {
@@ -67,12 +83,15 @@ impl Snake {
         }
         return false;
     }
-    pub fn try_to_eat(&mut self, food:&Food) {
-        let head:SnakeBody = SnakeBody { x: self.body.first().unwrap().x, y: self.body.first().unwrap().y };
+    pub fn try_to_eat(&mut self, food: &Food) {
+        let head: SnakeBody = SnakeBody {
+            x: self.body.first().unwrap().x,
+            y: self.body.first().unwrap().y,
+        };
         if food.get_x() == head.x && food.get_y() == head.y {
-            self.grow=true;
+            self.grow = true;
             if self.speed > 0.1 {
-                self.speed-=0.05;
+                self.speed -= 0.05;
             }
         }
     }
@@ -83,7 +102,7 @@ impl Snake {
         self.speed
     }
 
-    pub fn set_direction(&mut self, direction:Direction) {
+    pub fn set_direction(&mut self, direction: Direction) {
         self.next_direction = direction;
     }
     pub fn get_direction(&self) -> Direction {
@@ -95,5 +114,4 @@ impl Snake {
     pub fn get_body(&self) -> &Vec<SnakeBody> {
         &self.body
     }
-
 }

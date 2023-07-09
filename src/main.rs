@@ -1,38 +1,33 @@
-mod snake;
-mod food;
 mod direction;
+mod food;
 mod game;
 mod gameover;
-mod mainmenu;
 mod highscore;
+mod mainmenu;
+mod score;
+mod snake;
 mod textblock;
 
-use sfml::{
-    graphics::{
-        Color, RenderTarget, RenderWindow, Font
-    },
-    window::{ContextSettings, Event, Style, Key},
-    system::{Clock, Time},
-};
 use crate::{
-    game::GameState,
-    highscore::HighScore,
-    mainmenu::MainMenu,
-    gameover::GameOver,
-    game::Game
+    game::Game, game::GameState, gameover::GameOver, highscore::HighScore, mainmenu::MainMenu,
+};
+use sfml::{
+    graphics::{Color, Font, RenderTarget, RenderWindow},
+    system::{Clock, Time},
+    window::{ContextSettings, Event, Style},
 };
 pub const SCALE: f32 = 16.;
 pub const WIDTH: f32 = 50.;
 pub const HEIGHT: f32 = 38.;
 
-type Handler = fn(Key,&mut game::Game);
+type Handler = fn(Event, &mut game::Game);
 
 fn main() {
     let font = Font::from_file("src/assets/Minimal3x5.ttf").unwrap();
     let mut clock = Clock::start();
-    let mut time:Time;
+    let mut time: Time;
     let mut rw = RenderWindow::new(
-        ( ( SCALE*WIDTH ) as u32, ( SCALE*HEIGHT ) as u32),
+        ((SCALE * WIDTH) as u32, (SCALE * HEIGHT) as u32),
         "Boitata",
         Style::CLOSE,
         &ContextSettings::default(),
@@ -40,7 +35,7 @@ fn main() {
     let mut game = Game::new();
     let mut handler: Handler = MainMenu::handler;
     rw.set_vertical_sync_enabled(true);
-    
+
     while rw.is_open() {
         rw.clear(Color::BLACK);
 
@@ -54,7 +49,7 @@ fn main() {
                     clock.restart();
                     rw.clear(Color::BLACK);
                 }
-            },
+            }
             GameState::GameOver => {
                 handler = GameOver::handler;
                 GameOver::render(&mut rw, &font, &game);
@@ -65,7 +60,7 @@ fn main() {
             }
             GameState::HighScore => {
                 handler = HighScore::handler;
-                HighScore::render(&mut rw, &font);
+                HighScore::render(&mut rw, &font, &mut game);
             }
             GameState::Quit => {
                 rw.close();
@@ -75,10 +70,7 @@ fn main() {
         while let Some(ev) = rw.poll_event() {
             match ev {
                 Event::Closed => rw.close(),
-                Event::KeyReleased { code, .. } => {
-                    handler(code, &mut game);
-                },
-                _ => {}
+                _ => handler(ev, &mut game),
             }
         }
     }
