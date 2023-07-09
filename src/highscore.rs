@@ -26,10 +26,10 @@ impl HighScore {
             String::from("Esc to return"),
         ];
         // Ugly solution but does the job
-        for ( i, record ) in score.records.iter().enumerate() {
+        for (i, record) in score.records.iter().enumerate() {
             match record {
                 Some(r) => {
-                    messages[i+2] = format!("{} {}", r.score, r.name);
+                    messages[i + 2] = format!("{} {}", r.score, r.name);
                 }
                 None => {}
             }

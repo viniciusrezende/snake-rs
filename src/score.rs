@@ -1,6 +1,5 @@
 use std::fs;
 
-
 #[derive(Clone)]
 pub struct ScoreRecord {
     pub score: u32,
@@ -53,7 +52,7 @@ impl Score {
                 Some(ref r) => {
                     if score > r.score {
                         for j in (i + 1..5).rev() {
-                            self.records[j] = self.records[j-1].clone()
+                            self.records[j] = self.records[j - 1].clone()
                         }
                         self.records[i] = Some(ScoreRecord {
                             score: score,
