@@ -36,7 +36,6 @@ impl GameOver {
                 _ => {}
             },
             Event::TextEntered { unicode, .. } => {
-                println!("unicode: {} {}", unicode, unicode as u8);
                 match unicode as u8 {
                     8 => {
                         game.pop_name();

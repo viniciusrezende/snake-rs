@@ -45,7 +45,7 @@ impl Snake {
             x: starting_x - 2.,
             y: starting_y,
         });
-        return snk;
+        snk
     }
 
     pub fn move_forward(&mut self) {
@@ -72,7 +72,7 @@ impl Snake {
             x: self.body.first().unwrap().x,
             y: self.body.first().unwrap().y,
         };
-        if head.x <= 0. || head.x >= WIDTH - 1 as f32 || head.y <= 0. || head.y >= HEIGHT - 1 as f32
+        if head.x <= 0. || head.x >= WIDTH - 1_f32 || head.y <= 0. || head.y >= HEIGHT - 1_f32
         {
             return true;
         }
@@ -81,7 +81,7 @@ impl Snake {
                 return true;
             }
         }
-        return false;
+        false
     }
     pub fn try_to_eat(&mut self, food: &Food) {
         let head: SnakeBody = SnakeBody {

@@ -5,12 +5,12 @@ use sfml::{
 
 use crate::game::Game;
 use crate::game::GameState;
-use crate::score::{Score, ScoreRecord};
+use crate::score::{Score};
 use crate::textblock::TextBlock;
 pub struct HighScore {}
 
 impl HighScore {
-    pub fn render(rw: &mut RenderWindow, font: &Font, game: &mut Game) {
+    pub fn render(rw: &mut RenderWindow, font: &Font, _game: &mut Game) {
         let mut score = Score::new();
         score.fetch();
 

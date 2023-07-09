@@ -26,7 +26,7 @@ impl Score {
             let name = parts.next().unwrap();
             if i < 5 {
                 self.records[i] = Some(ScoreRecord {
-                    score: score,
+                    score,
                     name: String::from(name),
                 });
             }
@@ -46,7 +46,6 @@ impl Score {
     }
     pub fn add(&mut self, score: u32, name: String) {
         self.fetch();
-        println!("add {} {}", score, name);
         for i in 0..5 {
             match self.records[i] {
                 Some(ref r) => {
@@ -55,16 +54,16 @@ impl Score {
                             self.records[j] = self.records[j - 1].clone()
                         }
                         self.records[i] = Some(ScoreRecord {
-                            score: score,
-                            name: String::from(name),
+                            score,
+                            name,
                         });
                         break;
                     }
                 }
                 None => {
                     self.records[i] = Some(ScoreRecord {
-                        score: score,
-                        name: String::from(name),
+                        score,
+                        name,
                     });
                     break;
                 }

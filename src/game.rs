@@ -1,6 +1,6 @@
 use crate::direction::Direction;
 use crate::food::Food;
-use crate::score::{Score, ScoreRecord};
+
 use crate::snake::Snake;
 use crate::HEIGHT;
 use crate::SCALE;
@@ -36,7 +36,7 @@ impl Game {
         };
 
         game.food.regenerate();
-        return game;
+        game
     }
     pub fn reset(&mut self) {
         self.snake = Snake::new(20., 20.);
@@ -144,11 +144,7 @@ impl Game {
     pub fn get_name(&self) -> &String {
         &self.name
     }
-    pub fn set_name(&mut self, name: String) {
-        self.name = name;
-    }
     pub fn push_name(&mut self, c: char) {
-        println!("{}", c);
         self.name.push(c);
     }
     pub fn pop_name(&mut self) {
