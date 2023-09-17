@@ -12,18 +12,22 @@ use crate::{
     game::Game, game::GameState, gameover::GameOver, highscore::HighScore, mainmenu::MainMenu,
 };
 use sfml::{
-    graphics::{Color, Font, RenderTarget, RenderWindow},
+    graphics::{Color, Font, RenderTarget, RenderWindow, Texture},
     system::{Clock, Time},
     window::{ContextSettings, Event, Style},
+    audio::{SoundBuffer, Sound},
 };
-pub const SCALE: f32 = 16.;
+pub const SCALE: f32 = 32.;
 pub const WIDTH: f32 = 50.;
-pub const HEIGHT: f32 = 38.;
+pub const HEIGHT: f32 = 30.;
 
 type Handler = fn(Event, &mut game::Game);
 
 fn main() {
-    let font = Font::from_file("src/assets/Minimal3x5.ttf").unwrap();
+    let ss = Texture::from_file("assets/spritesheet.png").unwrap();
+    let font = Font::from_file("assets/Minimal3x5.ttf").unwrap();
+    let sbuffer = SoundBuffer::from_file("assets/fire.ogg").unwrap();
+    let mut sound = Sound::with_buffer(&sbuffer);
     let mut clock = Clock::start();
     let mut time: Time;
     let mut rw = RenderWindow::new(
@@ -42,10 +46,10 @@ fn main() {
         match game.get_game_state() {
             game::GameState::Running => {
                 handler = game::Game::handler;
-                game.update_render(&mut rw);
+                game.update_render(&mut rw, &ss);
                 time = clock.elapsed_time();
                 if time.as_seconds() >= game.get_speed() {
-                    game.tick();
+                    game.tick(&mut sound);
                     clock.restart();
                     rw.clear(Color::BLACK);
                 }

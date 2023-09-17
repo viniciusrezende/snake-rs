@@ -1,6 +1,5 @@
 use crate::direction::Direction;
 use crate::food::Food;
-use sfml::graphics::Color;
 
 use crate::HEIGHT;
 use crate::WIDTH;
@@ -20,7 +19,6 @@ pub struct Snake {
     body: Vec<SnakeBody>,
     next_direction: Direction,
     current_direction: Direction,
-    color: Color,
     speed: f32,
     grow: bool,
 }
@@ -33,7 +31,6 @@ impl Snake {
             }],
             current_direction: Direction::Right,
             next_direction: Direction::Right,
-            color: Color::GREEN,
             speed: 0.5,
             grow: false,
         };
@@ -94,9 +91,6 @@ impl Snake {
                 self.speed -= 0.05;
             }
         }
-    }
-    pub fn get_color(&self) -> Color {
-        self.color
     }
     pub fn get_speed(&self) -> f32 {
         self.speed

@@ -6,8 +6,11 @@ use crate::HEIGHT;
 use crate::SCALE;
 use crate::WIDTH;
 
-use sfml::graphics::{Color, RectangleShape, RenderTarget, RenderWindow, Shape, Transformable};
+use sfml::graphics::{ RenderTarget, RenderWindow, Transformable, Texture, Sprite, IntRect};
 use sfml::window::{Event, Key};
+use sfml::system::{Vector2f};
+use sfml::audio::{Sound};
+use libm::atan2f;
 
 #[derive(Eq, PartialEq, Copy, Clone, Debug, Hash)]
 pub enum GameState {
@@ -44,49 +47,133 @@ impl Game {
         self.score = 0;
         self.food.regenerate();
     }
-    fn render_wall(&mut self, rw: &mut RenderWindow) {
-        let mut rect = RectangleShape::new();
-        rect.set_position((0., 0.));
-        rect.set_size((WIDTH * SCALE, SCALE));
-        rect.set_fill_color(Color::BLUE);
-        rw.draw(&rect);
-        rect.set_position((0., HEIGHT * SCALE - SCALE));
-        rw.draw(&rect);
-        rect.set_size((SCALE, HEIGHT * SCALE));
-        rect.set_position((0., 0.));
-        rw.draw(&rect);
-        rect.set_position((WIDTH * SCALE - SCALE, 0.));
-        rw.draw(&rect);
+    fn helper_get_origin(angle:f32) -> Vector2f {
+        match angle as u32 {
+            0 => Vector2f{x:0., y:0.},
+            90 => Vector2f{x:0., y:16.},
+            180 => Vector2f{x:16., y:16.},
+            270 => Vector2f{x:16., y:0.},
+            _ => Vector2f{x:0., y:0.}
+        }
     }
+    fn render_wall(&mut self, rw: &mut RenderWindow, ss: &Texture) {
+        let mut sprite = Sprite::with_texture(ss);
+        let mut offset:i32;
+        let mut rotation: f32;
+        sprite.scale(Vector2f{x:SCALE/16., y:SCALE/16.});
+        sprite.set_texture_rect(IntRect{left:96, top:0, width:16, height:16});
+        for i in 0..(WIDTH as u32) {
+            for j in 0..(HEIGHT as u32) {
+                rotation=0.;
+                offset=96;
+                /*
+                 * This is not my brightest code. I'm sorry.
+                 * It definitely needs a refactor.
+                 * 
+                 * I couldn't use texture repeat(tiling) because I was using spritesheet.
+                 * Possibly would work for single file as texture.
+                 */
+                if i>0 && i<WIDTH as u32-1 && j>0 && j<HEIGHT as u32-1 {
+                    offset=80;
+                } else if i==0 && j==0 {
+                    offset=112;
+                } else if i==0 && j==HEIGHT as u32-1 {
+                    offset=112;
+                    rotation = 270.;
+                } else if i==WIDTH as u32-1 && j==0 {
+                    offset=112;
+                    rotation = 90.;
+                } else if i==WIDTH as u32-1 && j==HEIGHT as u32-1 {
+                    offset=112;
+                    rotation = 180.;
+                } else if i==0 {
+                    rotation = 270.;
+                } else if i==WIDTH as u32-1 {
+                    rotation = 90.;
+                } else if j==HEIGHT as u32-1 {
+                    rotation = 180.;
+                }
 
-    fn render_snake(&mut self, rw: &mut RenderWindow) {
-        for part in self.snake.get_body() {
-            let mut rect = RectangleShape::new();
-            rect.set_position((part.get_x() * SCALE, part.get_y() * SCALE));
-            rect.set_size((SCALE, SCALE));
-            rect.set_fill_color(self.snake.get_color());
-            rw.draw(&rect);
+                sprite.set_origin(Self::helper_get_origin(rotation));
+                sprite.set_rotation(rotation);
+                sprite.set_texture_rect(IntRect{left:offset, top:0, width:16, height:16});
+                sprite.set_position((i as f32 * SCALE, j as f32 * SCALE));
+                rw.draw(&sprite);
+            }
         }
     }
 
-    fn render_food(&mut self, rw: &mut RenderWindow) {
-        let mut rect = RectangleShape::new();
-        rect.set_position((self.food.get_x() * SCALE, self.food.get_y() * SCALE));
-        rect.set_size((SCALE, SCALE));
-        rect.set_fill_color(Color::RED);
-        rw.draw(&rect);
+    fn render_snake(&mut self, rw: &mut RenderWindow, ss: &Texture) {
+        for (i, part) in self.snake.get_body().iter().enumerate() {
+            let mut sprite = Sprite::with_texture(&ss);
+            let mut angle;
+            sprite.set_position((part.get_x() * SCALE, part.get_y() * SCALE));
+            sprite.set_texture_rect(IntRect{left:0, top:0, width:16, height:16});
+            if i == 0 {
+                sprite.set_texture_rect(IntRect{left:16, top:0, width:16, height:16});
+                angle = atan2f(
+                    part.get_y() - self.snake.get_body().get(1).unwrap().get_y(), 
+                    part.get_x() - self.snake.get_body().get(1).unwrap().get_x()
+                );
+            } else if i == self.snake.get_body().len() - 1 {
+                sprite.set_texture_rect(IntRect{left:48, top:0, width:16, height:16});
+                angle = atan2f(
+                    self.snake.get_body().get(i-1).unwrap().get_y() - part.get_y(), 
+                    self.snake.get_body().get(i-1).unwrap().get_x() - part.get_x()
+                );
+            } else {
+                angle = atan2f(
+                    self.snake.get_body().get(i-1).unwrap().get_y() - self.snake.get_body().get(i+1).unwrap().get_y(), 
+                    self.snake.get_body().get(i-1).unwrap().get_x() - self.snake.get_body().get(i+1).unwrap().get_x()
+                );
+                sprite.set_texture_rect(IntRect{left:0, top:0, width:16, height:16});
+            }
+            
+            angle = angle.to_degrees();
+
+            if angle % 90. != 0.0 {
+                sprite.set_texture_rect(IntRect{left:32, top:0, width:16, height:16});
+                angle -= 45.;
+                if angle%180. == 0. && self.snake.get_body().get(i-1).unwrap().get_x() != part.get_x() {
+                    angle -= 180.;
+                } else if (angle-90.)%180. == 0. && part.get_x() != self.snake.get_body().get(i+1).unwrap().get_x() {
+                    angle -= 180.;
+                }
+                
+                if angle < 0. {
+                    angle += 360.;
+                }
+            }
+            if angle < 0. {
+                angle += 360.;
+            }
+            sprite.set_origin(Self::helper_get_origin(angle));
+            sprite.scale(Vector2f{x:SCALE/16., y:SCALE/16.});
+            sprite.rotate(angle);
+            rw.draw(&sprite);
+        }
     }
-    pub fn update_render(&mut self, rw: &mut RenderWindow) {
-        self.render_wall(rw);
-        self.render_food(rw);
-        self.render_snake(rw);
+
+    fn render_food(&mut self, rw: &mut RenderWindow, ss: &Texture) {
+        let mut sprite = Sprite::with_texture(ss);
+        sprite.set_position((self.food.get_x() * SCALE, self.food.get_y() * SCALE));
+        sprite.set_texture_rect(IntRect{left:64, top:0, width:16, height:16});
+        sprite.set_position((self.food.get_x() * SCALE, self.food.get_y() * SCALE));
+        sprite.scale(Vector2f{x:SCALE/16., y:SCALE/16.});
+        rw.draw(&sprite);
+    }
+    pub fn update_render(&mut self, rw: &mut RenderWindow, ss: &Texture) {
+        self.render_wall(rw, ss);
+        self.render_food(rw, ss);
+        self.render_snake(rw, ss);
 
         rw.display();
     }
 
-    pub fn tick(&mut self) {
+    pub fn tick(&mut self, sound: &mut Sound) {
         self.snake.try_to_eat(&self.food);
         if self.snake.get_grow() {
+            sound.play();
             self.inc_score();
             self.food.regenerate();
         }

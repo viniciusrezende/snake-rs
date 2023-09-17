@@ -17,6 +17,10 @@ impl Score {
         }
     }
     pub fn fetch(&mut self) {
+        let score_exists = fs::read("scores.txt");
+        if score_exists.is_err() {
+            fs::write("scores.txt", "").expect("Unable to write file");
+        }
         let contents =
             fs::read_to_string("scores.txt").expect("Something went wrong reading the file");
         let lines = contents.lines();
