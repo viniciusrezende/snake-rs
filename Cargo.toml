@@ -8,7 +8,7 @@ edition = "2021"
 [dependencies]
 libm = "0.2.7"
 rand = "0.8.5"
-sfml = "0.20.0"
+sfml = "0.21.0"
 
 [[bin]]
 name = "rust-snake"
